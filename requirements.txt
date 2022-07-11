@@ -1,0 +1,7 @@
+cmake>=3.13.2
+plyfile
+tensorboardX
+pyyaml
+scipy
+six
+pandas
