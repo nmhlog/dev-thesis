@@ -43,8 +43,8 @@ class U_NET(nn.Module):
             spconv.SubMConv3d(input_c, width, kernel_size=3, padding=1, bias=False, indice_key='subm1')
         )
         if cfg.aspp == True:
-            from model.unet_aspp import unet_aspp
-            self.unet = unet_aspp([width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width], norm_fn, block_reps)#, indice_key_id=1)
+            from model.unet_aspp import Unet_aspp
+            self.unet = Unet_aspp([width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width], norm_fn, block_reps)#, indice_key_id=1)
         else:
             from model.unet_base import unet_base
             self.unet = unet_base([width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width], norm_fn, block_reps)#, indice_key_id=1)
