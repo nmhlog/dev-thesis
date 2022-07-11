@@ -5,6 +5,13 @@ import json
 import random
 import math
 
+import glob, numpy as np, torch
+import pandas as pd
+import os
+import json
+import random
+import math
+
 def splitPointCloud(cloud, size=50.0, stride=50):
     limitMax = np.amax(cloud[:, 0:3], axis=0)
     width = int(np.ceil((limitMax[0] - size) / stride)) + 1
@@ -29,7 +36,7 @@ def getFiles(files,fileSplit):
     return res
 
 def dataAug(file,semanticKeep):
-    points = pd.read_csv(file, header = None,delimiter=" ").values
+    points = pd.read_csv(file, header = None).values
     angle = random.randint(1, 359)
     angleRadians = math.radians(angle)
     rotationMatrix = np.array([[math.cos(angleRadians), -math.sin(angleRadians),0],[math.sin(angleRadians),math.cos(angleRadians), 0],[0,0,1]])
@@ -37,7 +44,7 @@ def dataAug(file,semanticKeep):
     pointsKept = points[np.in1d(points[:,6], semanticKeep)]
     return pointsKept
 
-def preparePthFiles(files, split, outPutFolder, AugTimes=0,with_instance_calculation = True):
+def preparePthFiles(files, split, outPutFolder,size=50, stride=50,semanticKeep = [2, 3, 7, 8, 9, 12, 13], AugTimes=0, isInstance = False):
     ### save the coordinates so that we can merge the data to a single scene after segmentation for visualization
     outJsonPath = os.path.join(outPutFolder, 'coordShift.json')
     coordShift = {}
@@ -46,34 +53,34 @@ def preparePthFiles(files, split, outPutFolder, AugTimes=0,with_instance_calcula
 
     # Map relevant classes to {1,...,14}, and ignored classes to -100
     remapper = np.ones(150) * (-100)
-    for i, x in enumerate([0, 1, 2, 3]):
+    for i, x in enumerate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]):
         remapper[x] = i
     # Map instance to -100 based on selected semantic (change a semantic to -100 if you want to ignore it for instance)
     remapper_disableInstanceBySemantic = np.ones(150) * (-100)
-    for i, x in enumerate([-100, 1]):
+    for i, x in enumerate([-100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]):
         remapper_disableInstanceBySemantic[x] = i
 
-    ### only augment data for these classes
-    semanticKeep = [0, 2, 3]
 
     counter = 0
     for file in files:
 
         for AugTime in range(AugTimes+1):
             if AugTime == 0:
-                points = pd.read_csv(file, header=None,delimiter=" ").values
+                points = pd.read_csv(file, header=None).values
             else:
                 points = dataAug(file,semanticKeep)
-            name = os.path.basename(file).strip('.txt')+'_%d'%AugTime
+            name = os.path.basename(file).strip('.txt').split("_")
+            name[0] = name[0].zfill(2)
+            name= "_".join(name)+'_%d'%AugTime
 
             if split != 'test':
                 coordShift['globalShift'] = list(points[:, :3].min(0))
             points[:, :3] = points[:, :3] - points[:, :3].min(0)
 
-            blocks = splitPointCloud(points, size=50, stride=50)
+            blocks = splitPointCloud(points, size, stride)
             for blockNum, block in enumerate(blocks):
                 if (len(block) > 10000):
-                    outFilePath = os.path.join(outPutFolder, name + str(blockNum) + '_inst_nostuff.pth')
+                    outFilePath = os.path.join(outPutFolder, name + "_" +str(blockNum).zfill(4) + '_inst_nostuff.pth')
                     if (block[:, 2].max(0) - block[:, 2].min(0) < zThreshold):
                         block = np.append(block, [[block[:, 0].mean(0), block[:, 1].mean(0),
                                                    block[:, 2].max(0) + (
@@ -88,7 +95,6 @@ def preparePthFiles(files, split, outPutFolder, AugTimes=0,with_instance_calcula
                     coords = np.ascontiguousarray(block[:, :3] - block[:, :3].mean(0))
 
                     # coords = block[:, :3]
-                    # colors = np.ascontiguousarray(block[:, 3:6]) 
                     colors = np.ascontiguousarray(block[:, 3:6]) / 127.5 - 1
 
                     coords = np.float32(coords)
@@ -106,7 +112,7 @@ def preparePthFiles(files, split, outPutFolder, AugTimes=0,with_instance_calcula
                         disableInstanceBySemantic_labels = remapper_disableInstanceBySemantic[
                             np.array(disableInstanceBySemantic_labels)]
                         instance_labels = np.where(disableInstanceBySemantic_labels == -100, -100, instance_labels)
-
+                        inst_check = instance_labels.copy()
                         # map instance from 0.
                         # [1:] because there are -100
                         uniqueInstances = (np.unique(instance_labels))[1:].astype(np.int32)
@@ -117,17 +123,24 @@ def preparePthFiles(files, split, outPutFolder, AugTimes=0,with_instance_calcula
                         instance_labels = remapper_instance[instance_labels.astype(np.int32)]
 
                         uniqueSemantics = (np.unique(sem_labels))[1:].astype(np.int32)
-                        if with_instance_calculation :
-
-                            if split == 'train' and (len(uniqueInstances) <= 1):
+                        if isInstance == True:
+                            if split == 'train' and (
+                                    len(uniqueInstances) < 10 or (len(uniqueSemantics) >= (len(uniqueInstances) - 2))):
                                 print("unique insance: %d" % len(uniqueInstances))
                                 print("unique semantic: %d" % len(uniqueSemantics))
                                 print()
                                 counter += 1
                             else:
                                 torch.save((coords, colors, sem_labels, instance_labels), outFilePath)
-                        else :                     
+                        else:
                             torch.save((coords, colors, sem_labels, instance_labels), outFilePath)
+                            if split.startswith('val'):
+                                real_gtFolder = os.path.join(outPutFolder,'real_gt')
+                                os.makedirs(real_gtFolder,exist_ok=True)
+                                inst_check = np.reshape(inst_check,(len(inst_check),1))
+                                inst_real = np.reshape(block[:,-2],(len(block[:,-1]),1))
+                                outFilePath = os.path.join(real_gtFolder, name + "_" +str(blockNum).zfill(4) + '_inst_nostuff.pth')
+                                np.savetxt(outFilePath,np.concatenate((inst_check,inst_real),axis=1),fmt="%d %d")
                     else:
                         torch.save((coords, colors), outFilePath)
 
@@ -155,28 +168,36 @@ def prepareInstGt(valOutDir, val_gtFolder,semantic_label_idxs):
             instance_label_new[instance_mask] = semantic_label * 1000 + inst_id + 1
 
         np.savetxt(os.path.join(val_gtFolder, scene_name + '.txt'), instance_label_new, fmt='%d')
-
 if __name__ == '__main__':
 
-    data_folder = os.path.join('data_annotated_new')
+    data_folder = 'dataset/Synthetic_v3_InstanceSegmentation'
     filesOri = sorted(glob.glob(data_folder + '/*.txt'))
 
     trainSplit = [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19, 21, 22, 23, 24]
     trainFiles = getFiles(filesOri,trainSplit)
-    split = 'train'
+    split = 'train_seg_50x25'
     trainOutDir = os.path.join(data_folder,split)
     os.makedirs(trainOutDir,exist_ok=True)
-    preparePthFiles(trainFiles, split, trainOutDir, AugTimes=1)
+    preparePthFiles(trainFiles, split, trainOutDir, stride=25,AugTimes=6)
+
+    split = 'train_seg_50x50'
+    trainOutDir = os.path.join(data_folder,split)
+    os.makedirs(trainOutDir,exist_ok=True)
+    preparePthFiles(trainFiles, split, trainOutDir,AugTimes=6)
 
     valSplit = [5, 10, 15, 20, 25]
-    split = 'val'
+    split = 'val_seg'
     valFiles = getFiles(filesOri, valSplit)
     valOutDir = os.path.join(data_folder,split)
     os.makedirs(valOutDir,exist_ok=True)
     preparePthFiles(valFiles, split, valOutDir)
 
-    semantic_label_idxs = [0, 1, 2, 3]
-    semantic_label_names = ['ground', 'building', 'vegetation', 'other']
+    semantic_label_idxs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    semantic_label_names = ['ground', 'Building', 'LowVegetation', 'MediumVegetation', 'HighVegetation', 'Vehicle',
+                            'Truck', 'Aircraft', 'MilitaryVehicle', 'Bike', 'Motorcycle', 'LightPole', 'StreetSgin',
+                            'Clutter', 'Fence']
     val_gtFolder = os.path.join(data_folder,'val_gt')
     os.makedirs(val_gtFolder,exist_ok=True)
     prepareInstGt(valOutDir, val_gtFolder, semantic_label_idxs)
+
+
