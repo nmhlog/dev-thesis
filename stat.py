@@ -4,7 +4,7 @@ import glob
 import os
 import torch
 
-data_folder = "Synthetic_v3_InstanceSegmentation/train_seg_50x25/train"
+data_folder = "dataset/Synthetic_v3_InstanceSegmentation/train_seg_50x25/train"
 files = sorted(glob.glob(data_folder + '/*.pth'))
 numclass = 15
 semanticIDs = []
@@ -58,4 +58,4 @@ maxSemantic = np.max(num_points_semantic)
 num_points_semantic = maxSemantic/num_points_semantic
 num_points_semantic = num_points_semantic/num_points_semantic[0]
 print ("Using the printed list in hais_run_stpls3d.yaml for class_weight")
-print ([float("{0:0.2f}".format(i)) for i in num_points_semantic][2:], sep='')
+print ([float("{0:0.2f}".format(i)) for i in num_points_semantic], sep='')
