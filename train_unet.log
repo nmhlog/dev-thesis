@@ -1,0 +1,10 @@
+[2022-07-11 06:43:08,230  INFO  log.py  line 39  11511]  ************************ Start Logging ************************
+cp: target 'diceloss/unet/backup_files' is not a directory
+cp: target 'diceloss/unet/backup_files' is not a directory
+cp: target 'diceloss/unet/backup_files' is not a directory
+cp: target 'diceloss/unet/backup_files' is not a directory
+[2022-07-11 06:43:08,297  INFO  train.py  line 22  11511]  <class 'util.config.get_parser.<locals>.args_cfg'>
+[2022-07-11 06:43:08,303  INFO  train.py  line 158  11511]  => creating model ...
+[2022-07-11 06:43:08,392  INFO  train.py  line 166  11511]  cuda available: True
+[2022-07-11 06:43:11,306  INFO  train.py  line 170  11511]  #classifier parameters: 7570991
+[2022-07-11 06:44:35,107  INFO  stpls3d_inst.py  line 50  11511]  Training samples: 5776

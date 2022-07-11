@@ -18,7 +18,7 @@ def get_parser():
 
     # args_cfg = parser.parse_args()
     class args_cfg:
-        config = "stpls3dv2.yaml"
+        config = "config/unet.yaml"
         save_dir = "save_dir"
         pretrain = "exp"
         dist = False
