@@ -132,6 +132,16 @@ def checkpoint_save(model, optimizer, exp_path, exp_name, epoch, save_freq=16, u
         if not is_multiple(epoch, save_freq) and not is_power2(epoch):
             os.remove(f)
 
+def save_best_checkpoint(model, optimizer, exp_path, exp_name, epoch,  use_cuda=True, ):
+    f = os.path.join(exp_path, exp_name + "best_val" + '.pth')
+    logger.info('Saving ' + f)
+    model.cpu()
+    
+    checkpoint = {'net': model.state_dict(), 'optimizer': optimizer.state_dict()}
+    torch.save(checkpoint, f)
+    
+    if use_cuda:
+        model.cuda()
 
 def load_model_param(model, pretrained_dict, prefix=""):
     # suppose every param in model should exist in pretrain_dict, but may differ in the prefix of the name

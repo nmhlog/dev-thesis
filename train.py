@@ -57,7 +57,7 @@ def train_epoch(train_loader, model, model_fn, optimizer, epoch):
         utils.cosine_lr_after_step(optimizer, cfg.lr, epoch - 1, cfg.step_epoch, cfg.epochs)
     
         # prepare input and forward
-        loss, _, visual_dict, meter_dict = model_fn(batch, model, epoch)
+        loss, _, visual_dict, meter_dict = model_fn(batch, model)
 
         # meter_dict
         for k, v in meter_dict.items():
@@ -113,10 +113,6 @@ def eval_epoch(val_loader, model, model_fn, epoch):
 
             # prepare input and forward
             loss, preds, visual_dict, meter_dict = model_fn(batch, model)
-            
-            if is_best:
-                pass
-
             for k, v in meter_dict.items():
                 if k not in am_dict.keys():
                     am_dict[k] = utils.AverageMeter()
@@ -217,3 +213,4 @@ if __name__ == '__main__':
 
         if utils.is_multiple(epoch, cfg.save_freq) or utils.is_power2(epoch):
             eval_epoch(dataset.val_data_loader, model, model_fn, epoch)
+    utils.save_best_checkpoint(model, optimizer, os.path.join(cfg.exp_path,"last checkpoint") , cfg.config.split('/')[-1][:-5], epoch, use_cuda)

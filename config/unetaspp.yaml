@@ -1,21 +1,21 @@
 DATA:
-  batch_size: 12
+  batch_size: 32
   class_weight:
   - 1.0
-  - 1.3218264
-  - 465.87906812
-  - 225.23988676
-  - 2.73622797
-  - 35.57265154
-  - 45.14015726
-  - 231.48178534
-  - 248.70668842
-  - 585.40875646
-  - 171.26232546
-  - 120.44066672
-  - 455.91276741
-  - 98.91424767
-  - 29.28717161
+  - 1.32
+  - 465.87
+  - 225.23
+  - 2.73
+  - 35.57
+  - 45.14
+  - 231.48
+  - 248.70
+  - 585.40
+  - 171.26
+  - 120.44
+  - 455.91
+  - 98.91
+  - 29.28
   classes: 15
   data_root: dataset
   dataset: Synthetic_v3_InstanceSegmentation
@@ -63,7 +63,7 @@ TRAIN:
   cal_iou_based_on_mask: true
   cal_iou_based_on_mask_start_epoch: 200
   cluster_shift_meanActive: 3
-  epochs: 100
+  epochs: 512
   fg_thresh: 1.0
   fix_module: []
   loss_weight:

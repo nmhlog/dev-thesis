@@ -1,21 +1,21 @@
 DATA:
-  batch_size: 12
+  batch_size: 32
   class_weight:
   - 1.0
-  - 1.3218264
-  - 465.87906812
-  - 225.23988676
-  - 2.73622797
-  - 35.57265154
-  - 45.14015726
-  - 231.48178534
-  - 248.70668842
-  - 585.40875646
-  - 171.26232546
-  - 120.44066672
-  - 455.91276741
-  - 98.91424767
-  - 29.28717161
+  - 1.32
+  - 465.87
+  - 225.23
+  - 2.73
+  - 35.57
+  - 45.14
+  - 231.48
+  - 248.70
+  - 585.40
+  - 171.26
+  - 120.44
+  - 455.91
+  - 98.91
+  - 29.28
   classes: 15
   data_root: dataset
   dataset: Synthetic_v3_InstanceSegmentation
@@ -53,7 +53,7 @@ TEST:
   save_pt_offsets: false
   save_semantic: false
   split: val
-  test_epoch: 500
+  test_epoch: 512
   test_mask_score_thre: -0.5
   test_seed: 567
   test_workers: 10
