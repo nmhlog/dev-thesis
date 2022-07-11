@@ -41,7 +41,7 @@ GENERAL:
 STRUCTURE:
   block_reps: 2
   block_residual: true
-  model_name: Unet-aspp
+  model_name: Unet_aspp
   use_coords: true
   width: 16
 TEST:

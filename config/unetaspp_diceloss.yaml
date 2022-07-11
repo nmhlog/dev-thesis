@@ -28,8 +28,8 @@ DATA:
   max_npoint: 250000
   mode: 4
   scale: 3
-  aspp: false
-  diceloss : false
+  aspp: true
+  diceloss : true
   test_dataset: val_seg
   train_dataset: train_seg_50x25/train
   val_dataset: train_seg_50x25/val
@@ -41,7 +41,7 @@ GENERAL:
 STRUCTURE:
   block_reps: 2
   block_residual: true
-  model_name: Unet
+  model_name: Unet_aspp_diceloss
   use_coords: true
   width: 16
 TEST:
