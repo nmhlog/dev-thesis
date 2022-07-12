@@ -226,9 +226,7 @@ class Dataset:
             xyz_middle = xyz_middle[valid_idxs]
             xyz = xyz[valid_idxs]
             rgb = rgb[valid_idxs]
-            label = label[valid_idxs]
-            # if cfg.diceloss :
-            #     label = make_one_hot(torch.reshape(label,(label,1)),15)               
+            label = label[valid_idxs]         
             instance_label = self.getCroppedInstLabel(instance_label, valid_idxs)
 
             # get instance information

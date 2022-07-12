@@ -23,3 +23,15 @@ model/__pycache__
 unetaspp-000000010.pth
 Untitled-1.ipynb
 .vscode/launch.json
+losses/__init__.py
+losses/_functional.py
+losses/constants.py
+losses/dice.py
+losses/focal.py
+losses/jaccard.py
+losses/lovasz.py
+losses/mcc.py
+losses/soft_bce.py
+losses/soft_ce.py
+losses/tversky.py
+filename.pickle

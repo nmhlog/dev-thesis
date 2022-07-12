@@ -83,6 +83,14 @@ class DiceLoss(nn.Module):
         self.ignore_index = ignore_index
 
     def forward(self, predict, target):
+        bs = target.size(0)
+        num_classes = predict.size(1)
+        mask = target != self.ignore_index
+        target = target.view(bs, -1)
+        predict = predict.view(bs, num_classes, -1)
+        target = F.one_hot((target[mask]).to(torch.long), num_classes)  # N,H*W -> N,H*W, C
+        target = target.permute(0, 2, 1) 
+        predict= predict[mask]
         assert predict.shape == target.shape, 'predict & target shape do not match'
         dice = BinaryDiceLoss(**self.kwargs)
         total_loss = 0
