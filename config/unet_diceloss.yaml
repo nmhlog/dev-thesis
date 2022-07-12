@@ -29,7 +29,7 @@ DATA:
   mode: 4
   scale: 3
   aspp: false
-  diceloss : false
+  diceloss : true
   test_dataset: val_seg
   train_dataset: train_seg_50x25/train
   val_dataset: train_seg_50x25/val
