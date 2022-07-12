@@ -55,7 +55,7 @@ def train_epoch(train_loader, model, model_fn, optimizer, epoch):
         torch.cuda.empty_cache()
 
         # adjust learning rate
-        utils.cosine_lr_after_step(optimizer, cfg.lr, epoch - 1, cfg.step_epoch, cfg.epochs)
+        # utils.cosine_lr_after_step(optimizer, cfg.lr, epoch - 1, cfg.step_epoch, cfg.epochs)
     
         # prepare input and forward
         loss, _, visual_dict, meter_dict = model_fn(batch, model)
