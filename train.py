@@ -3,7 +3,7 @@ import torch.optim as optim
 import time, sys, os, random
 from tensorboardX import SummaryWriter
 import numpy as np
-
+import pickle
 from util.config import cfg
 
 import torch.distributed as dist
@@ -45,7 +45,8 @@ def train_epoch(train_loader, model, model_fn, optimizer, epoch):
         train_loader.sampler.set_epoch(epoch)
 
     for i, batch in enumerate(train_loader):
-
+        with open('filename.pickle', 'wb') as handle:
+            pickle.dump(batch, handle, protocol=pickle.HIGHEST_PROTOCOL)
         if batch['locs'].shape[0] < 20000:
             logger.info("point num < 20000, continue")
             continue
