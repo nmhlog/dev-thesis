@@ -20,3 +20,5 @@ lib/spconv/spconv.egg-info/
 backup/
 util/__pycache__
 model/__pycache__
+unetaspp-000000010.pth
+Untitled-1.ipynb

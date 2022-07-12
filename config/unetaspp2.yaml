@@ -1,0 +1,94 @@
+DATA:
+  batch_size: 32
+  class_weight:
+  - 1.0
+  - 1.32
+  - 465.87
+  - 225.23
+  - 2.73
+  - 35.57
+  - 45.14
+  - 231.48
+  - 248.70
+  - 585.40
+  - 171.26
+  - 120.44
+  - 455.91
+  - 98.91
+  - 29.28
+  classes: 15
+  data_root: dataset
+  dataset: Synthetic_v3_InstanceSegmentation
+  filename_suffix: _inst_nostuff.pth
+  full_scale:
+  - 128
+  - 512
+  ignore_label: -100
+  input_channel: 3
+  max_npoint: 250000
+  mode: 4
+  scale: 3
+  aspp: true
+  diceloss : false
+  test_dataset: val_seg
+  train_dataset: train_seg_50x25/train
+  val_dataset: train_seg_50x25/val
+GENERAL:
+  dataset_dir: stpls3d_inst.py
+  manual_seed: 123
+  model_dir: model/
+  task: train
+STRUCTURE:
+  block_reps: 2
+  block_residual: true
+  model_name: Unet_aspp
+  use_coords: true
+  width: 16
+TEST:
+  TEST_NMS_THRESH: 0.3
+  TEST_NPOINT_THRESH: 15
+  TEST_SCORE_THRESH: 0.09
+  eval: true
+  save_instance: false
+  save_pt_offsets: false
+  save_semantic: false
+  split: val
+  test_epoch: 500
+  test_mask_score_thre: -0.5
+  test_seed: 567
+  test_workers: 10
+  using_NMS: false
+TRAIN:
+  bg_thresh: 0.0
+  cal_iou_based_on_mask: true
+  cal_iou_based_on_mask_start_epoch: 200
+  cluster_shift_meanActive: 3
+  epochs: 512
+  fg_thresh: 1.0
+  fix_module: []
+  loss_weight:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  lr: 0.001
+  mask_filter_score_feature_thre: 0.5
+  max_proposal_num: 200
+  momentum: 0.9
+  multiplier: 0.5
+  optim: Adam
+  point_aggr_radius: 0.9
+  prepare_epochs: 100
+  pretrain_module: []
+  pretrain_path: null
+  save_freq: 16
+  score_fullscale: 20
+  score_mode: 4
+  score_scale: 3
+  step_epoch: 200
+  train_workers: 6
+  use_mask_filter_score_feature: true
+  use_mask_filter_score_feature_start_epoch: 200
+  using_set_aggr_in_testing: true
+  using_set_aggr_in_training: false
+  weight_decay: 0.0001

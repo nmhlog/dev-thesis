@@ -18,7 +18,7 @@ def get_parser():
 
     # args_cfg = parser.parse_args()
     class args_cfg:
-        config = "config/unetaspp.yaml"
+        config = "config/unetaspp2.yaml"
         save_dir = "save_dir"
         pretrain = "exp"
         dist = False

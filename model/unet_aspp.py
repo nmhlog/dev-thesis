@@ -172,13 +172,32 @@ class Unet_aspp(SparseModule):
         )
 
         self.deblock0 = self._make_layers(nPlanes[0] * 2, nPlanes[0], block_reps, norm_fn, indice_key=0)
-
+        self.fc = nn.Linear(nPlanes[-1], nPlanes[-1])
+        self.conv = spconv.SparseSequential(
+            norm_fn(nPlanes[-1] * 2),
+            nn.ReLU(), 
+            spconv.SubMConv3d(nPlanes[-1] * 2, nPlanes[-1], 1, bias=True))
+        
     def _make_layers(self, inplanes, planes, block_reps, norm_fn, indice_key=0):
         blocks = [ResidualBlock(inplanes, planes, norm_fn, indice_key='bb_subm{}'.format(indice_key))]
         for i in range(block_reps - 1):
             blocks.append(ResidualBlock(planes, planes, norm_fn, indice_key='bb_subm{}'.format(indice_key)))
         return spconv.SparseSequential(*blocks)
-
+    
+    def pool(self, x):
+        batch_size = x.batch_size
+        N = x.features.shape[0]
+        C = x.features.shape[1]
+        x_pool = x.features.new_zeros(batch_size, C)
+        for i in range(batch_size):
+            inds = x.indices[:, 0] == i
+            x_pool[i] = x.features[inds].mean(dim=0)
+        x_pool = self.fc(x_pool)
+        indices = x.indices[:, 0].long()
+        x_pool_expand = x_pool[indices]
+        x.features = torch.cat((x.features, x_pool_expand), dim=1)
+        x = self.conv(x)
+        return x
 
     def forward(self, x):
         out0 = self.block0(x)
