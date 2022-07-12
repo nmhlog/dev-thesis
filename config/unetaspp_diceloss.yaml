@@ -63,7 +63,7 @@ TRAIN:
   cal_iou_based_on_mask: true
   cal_iou_based_on_mask_start_epoch: 200
   cluster_shift_meanActive: 3
-  epochs: 100
+  epochs: 512
   fg_thresh: 1.0
   fix_module: []
   loss_weight:
