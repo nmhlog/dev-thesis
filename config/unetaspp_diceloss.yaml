@@ -86,7 +86,7 @@ TRAIN:
   score_mode: 4
   score_scale: 3
   step_epoch: 200
-  train_workers: 3
+  train_workers: 0
   use_mask_filter_score_feature: true
   use_mask_filter_score_feature_start_epoch: 200
   using_set_aggr_in_testing: true
