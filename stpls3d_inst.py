@@ -3,7 +3,7 @@ import scipy.ndimage
 import scipy.interpolate
 import torch
 from torch.utils.data import DataLoader
-
+from diceloss import make_one_hot
 sys.path.append('../')
 
 from util.config import cfg
@@ -227,6 +227,8 @@ class Dataset:
             xyz = xyz[valid_idxs]
             rgb = rgb[valid_idxs]
             label = label[valid_idxs]
+            if cfg.diceloss :
+                label = make_one_hot(torch.reshape(label,(label,1)),15)               
             instance_label = self.getCroppedInstLabel(instance_label, valid_idxs)
 
             # get instance information

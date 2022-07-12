@@ -156,11 +156,11 @@ def model_fn_decorator(test=False):
 
         coords_float = batch['locs_float'].cuda()              # (N, 3), float32, cuda
         feats = batch['feats'].cuda()                          # (N, C), float32, cuda
-        if cfg.diceloss:
-            labels = make_one_hot(torch.reshape(batch['labels'] ,(len(batch['labels'] ),1)),15)               # (N), long, cuda
-            labels = labels.cuda()
-        else :
-            labels = batch['labels'].cuda()
+        # if cfg.diceloss:
+            # labels = make_one_hot(torch.reshape(batch['labels'].cpu(),(len(batch['labels'] ),1)),15)               # (N), long, cuda
+            # labels = labels.cuda()
+        # else :
+        labels = batch['labels'].cuda()
         batch_offsets = batch['offsets'].cuda()                # (B + 1), int, cuda
         spatial_shape = batch['spatial_shape']
 
