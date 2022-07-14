@@ -133,7 +133,7 @@ def checkpoint_save(model, optimizer, exp_path, exp_name, epoch, save_freq=16, u
             os.remove(f)
 
 def save_best_checkpoint(model, optimizer, exp_path, exp_name, epoch,  use_cuda=True, ):
-    f = os.path.join(exp_path, exp_name + "best_val" + '.pth')
+    f = os.path.join(exp_path, exp_name + f"best_val{epoch}" + '.pth')
     logger.info('Saving ' + f)
     model.cpu()
     
