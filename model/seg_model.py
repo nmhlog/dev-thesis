@@ -46,8 +46,8 @@ class U_NET(nn.Module):
             from model.unet_aspp import Unet_aspp
             self.unet = Unet_aspp([width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width], norm_fn, block_reps)#, indice_key_id=1)
         else:
-            from model.unet_base import unet_base
-            self.unet = unet_base([width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width], norm_fn, block_reps)#, indice_key_id=1)
+            from model.unet_base1 import UBlock
+            self.unet = UBlock([width, 2*width, 3*width, 4*width, 5*width, 6*width, 7*width], norm_fn, block_reps)#, indice_key_id=1)
         self.output_layer = spconv.SparseSequential(
             norm_fn(width),
             nn.ReLU()
