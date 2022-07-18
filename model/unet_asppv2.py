@@ -3,49 +3,8 @@ from spconv.modules import SparseModule
 import torch
 from torch import nn
 
-class ASPP(SparseModule):
-    def __init__(self,in_channels, out_channels, norm_fn, indice_key=6, rate=[6, 12, 18]):
-        super(ASPP, self).__init__()
-
-        self.aspp_block1 = spconv.SparseSequential(
-            
-            spconv.SparseConv3d(
-                in_channels, out_channels, 3, stride=1, padding=rate[0], dilation=rate[0], bias=False,  indice_key="bb_ASPPspconv{}".format(indice_key)
-            ),
-            nn.ReLU(),
-            norm_fn(out_channels),
-        )
-        self.aspp_block2 = spconv.SparseSequential(
-            spconv.SparseConv3d(
-                in_channels, out_channels, 3, stride=1, padding=rate[1], dilation=rate[1], bias=False,  indice_key="bb_ASPPspconv{}".format(indice_key)
-            ),
-            nn.ReLU(),
-            norm_fn(out_channels),
-        )
-        self.aspp_block3 = spconv.SparseSequential(
-            spconv.SparseConv3d(
-                in_channels, out_channels, 3, stride=1, padding=rate[2], dilation=rate[2],  bias=False, indice_key="bb_ASPPspconv{}".format(indice_key)
-            ),
-            nn.ReLU(),
-            norm_fn(out_channels),
-        )
-
-        
-        self.conv_1x1 = spconv.SparseConv3d(len(rate) * out_channels, out_channels, 1, indice_key=indice_key)
-
-
-    def forward(self, input):
-
-        x1 = self.aspp_block1(input)
-        x2 = self.aspp_block2(input)
-        x3 = self.aspp_block3(input)
-#         out = self.aspp_block4(input)
-        x3.features = torch.cat((x1.features, x2.features,x3.features), dim=1)
-        out = self.conv_1x1(x3)
-        return out
-
 class ResidualBlock(SparseModule):
-    def __init__(self, in_channels, out_channels, norm_fn, indice_key=None):
+    def __init__(self, in_channels, out_channels, norm_fn, ,kernel_size =3, padding = 1, stride= 1, indice_key=None):
         super().__init__()
 
         if in_channels == out_channels:
@@ -54,16 +13,16 @@ class ResidualBlock(SparseModule):
             )
         else:
             self.i_branch = spconv.SparseSequential(
-                spconv.SubMConv3d(in_channels, out_channels, kernel_size=1, bias=False)
+                spconv.SubMConv3d(in_channels, out_channels, kernel_size=kernel_size, bias=False)
             )
 
         self.conv_branch = spconv.SparseSequential(
             norm_fn(in_channels),
             nn.ReLU(),
-            spconv.SubMConv3d(in_channels, out_channels, kernel_size=3, padding=1, bias=False, indice_key=indice_key),
+            spconv.SubMConv3d(in_channels, out_channels, kernel_size=kernel_size, padding=padding, stride =stride,  bias=False, indice_key=indice_key),
             norm_fn(out_channels),
             nn.ReLU(),
-            spconv.SubMConv3d(out_channels, out_channels, kernel_size=3, padding=1, bias=False, indice_key=indice_key)
+            spconv.SubMConv3d(out_channels, out_channels, kernel_size=kernel_size, padding=padding,stride =stride, bias=False, indice_key=indice_key)
         )
 
     def forward(self, input):
@@ -72,6 +31,34 @@ class ResidualBlock(SparseModule):
         output.features += self.i_branch(identity).features
 
         return output
+
+
+class ASPP(SparseModule):
+    def __init__(self,in_channels, out_channels, norm_fn, indice_key=6, rate=[6, 12, 18]):
+        super(ASPP, self).__init__()
+
+        self.aspp_block1 = ResidualBlock(inplanes, planes, norm_fn, padding=rate[0], dilation=rate[0], indice_key='bb_subm{}'.format(indice_key))
+        
+        
+
+        self.aspp_block2 = ResidualBlock(inplanes, planes, norm_fn, padding=rate[1], dilation=rate[1], indice_key='bb_subm{}'.format(indice_key))
+        
+      
+        self.aspp_block3 = ResidualBlock(inplanes, planes, norm_fn, padding=rate[2], dilation=rate[2], indice_key='bb_subm{}'.format(indice_key))
+        
+       
+        self.conv_1x1 = spconv.SparseConv3d(len(rate) * out_channels, out_channels, 1, indice_key=indice_key)
+
+
+    def forward(self, input):
+
+        x1 = self.aspp_block1(input)
+        x2 = self.aspp_block2(input)
+        x3 = self.aspp_block3(input)
+        x3.features = torch.cat((x1.features, x2.features,x3.features), dim=1)
+        out = self.conv_1x1(x3)
+        return out
+
 
 
 class Unet_aspp(SparseModule):
@@ -167,32 +154,13 @@ class Unet_aspp(SparseModule):
         )
 
         self.deblock0 = self._make_layers(nPlanes[0] * 2, nPlanes[0], block_reps, norm_fn, indice_key=0)
-#         self.fc = nn.Linear(nPlanes[-1], nPlanes[-1])
-#         self.conv = spconv.SparseSequential(
-#             norm_fn(nPlanes[-1] * 2),
-#             nn.ReLU(), 
-#             spconv.SubMConv3d(nPlanes[-1] * 2, nPlanes[-1], 1, bias=True))
+
         
     def _make_layers(self, inplanes, planes, block_reps, norm_fn, indice_key=0):
         blocks = [ResidualBlock(inplanes, planes, norm_fn, indice_key='bb_subm{}'.format(indice_key))]
         for i in range(block_reps - 1):
             blocks.append(ResidualBlock(planes, planes, norm_fn, indice_key='bb_subm{}'.format(indice_key)))
         return spconv.SparseSequential(*blocks)
-    
-#     def pool(self, x):
-#         batch_size = x.batch_size
-#         N = x.features.shape[0]
-#         C = x.features.shape[1]
-#         x_pool = x.features.new_zeros(batch_size, C)
-#         for i in range(batch_size):
-#             inds = x.indices[:, 0] == i
-#             x_pool[i] = x.features[inds].mean(dim=0)
-#         x_pool = self.fc(x_pool)
-#         indices = x.indices[:, 0].long()
-#         x_pool_expand = x_pool[indices]
-#         x.features = torch.cat((x.features, x_pool_expand), dim=1)
-#         x = self.conv(x)
-#         return x
 
     def forward(self, x):
         out0 = self.block0(x)
@@ -214,7 +182,6 @@ class Unet_aspp(SparseModule):
 
         out6 = self.conv6(out5)
         out6 = self.aspp(out6)
-#         out6 = self.pool(out6)
 
         d_out5 = self.deconv6(out6)
         d_out5.features = torch.cat((d_out5.features, out5.features), dim=1)
@@ -241,4 +208,4 @@ class Unet_aspp(SparseModule):
         d_out0 = self.deblock0(d_out0)
 
         return d_out0
-    
+

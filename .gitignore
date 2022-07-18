@@ -35,3 +35,10 @@ losses/soft_bce.py
 losses/soft_ce.py
 losses/tversky.py
 filename.pickle
+..gitignore.swp
+.ipynb_checkpoints/
+Untitled.ipynb
+config/.ipynb_checkpoints/
+model/.ipynb_checkpoints/
+util/.ipynb_checkpoints/
+model/__pycache__/
